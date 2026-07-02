@@ -17,13 +17,20 @@ export class PrismaService
   private readonly logger = new Logger(PrismaService.name);
   async onModuleInit() {
     try {
-      this.$connect();
+      await this.$connect();
       this.logger.log('Database connected!!');
     } catch (error) {
-      throw new InternalServerErrorException(error.message);
+      this.logger.error('Database connection error', error as any);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new InternalServerErrorException(message);
     }
   }
   async onModuleDestroy() {
-    this.$disconnect();
+    try {
+      await this.$disconnect();
+      this.logger.log('Database disconnected');
+    } catch (error) {
+      this.logger.error('Database disconnect error', error as any);
+    }
   }
 }
